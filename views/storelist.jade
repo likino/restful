@@ -82,7 +82,7 @@ block content
             div.form-group
               label.col-sm-2.control-label(for="storename") storename
               div.col-sm-10
-                input.form-control.storename(type="text", placeholder="storename")
+                input.form-control.storename(type="text", disabled="true", placeholder="storename")
             div.form-group
               label.col-sm-2.control-label(for="category") category
               div.col-sm-10
@@ -138,7 +138,7 @@ block content
       $.ajax({
         type: 'GET',
         url: '/review',
-        data: {storeID: x._id},
+        data: {storeid: x._id},
         success: function(data) {
           var ratings = data.reviews.map(x => x.rating);
           var average = arrAverageNum(ratings);
@@ -164,7 +164,7 @@ block content
                       `;
           $('tbody').append(item);
         },
-        error: function(err) {
+        error: function(xhr, err) {
           console.log(err)
         }
       })
@@ -186,8 +186,8 @@ block content
           $('#addModal').modal('hide');
           location.reload();
         },
-        error: function(err) {
-          alert("Save failed!");
+        error: function(xhr, err) {
+          alert(xhr.status + ", Save failed!");
         }
       });
     }
@@ -202,8 +202,8 @@ block content
           alert("Delete success!");
           location.reload();
         },
-        error: function(err) {
-          alert("Delete failed!");
+        error: function(xhr, err) {
+          alert(xhr.status + ", Delete failed!");
         }
       });
     }
@@ -219,9 +219,9 @@ block content
           $('tbody').empty();
           showStore(data);
         },
-        error: function(err) {
+        error: function(xhr, err) {
           console.log(err);
-          alert('Search failed!');
+          alert(xhr.status + ', Search failed!');
         }
       });
     }
@@ -235,11 +235,13 @@ block content
         data: {storename: storename},
         success: function(data) {
           $('tbody').empty();
-          showStore(data);
+          data.stores.map(function(x) {
+            showStore(x);
+          });
         },
-        error: function(err) {
+        error: function(xhr, err) {
           console.log(err);
-          alert('Search failed!');
+          alert(xhr.status + ', Search failed!');
         }
       });
     }
@@ -263,9 +265,9 @@ block content
             showStore(x);
           });
         },
-        error: function(err) {
+        error: function(xhr, err) {
           console.log(err)
-          alert('Search failed!');
+          alert(xhr.status + ', Search failed!');
         }
       });
     }
@@ -282,7 +284,7 @@ block content
           $('#editModal .category').val(data.category);
           $('#editModal .address').val(data.address);
         },
-        error: function(err) {
+        error: function(xhr, err) {
           console.log(err)
         }
       });
@@ -304,8 +306,8 @@ block content
           alert("Update success!");
           location.reload();
         },
-        error: function(err) {
-          alert("Update failed!");
+        error: function(xhr, err) {
+          alert(xhr.status + ", Update failed!");
         }
       });
     }

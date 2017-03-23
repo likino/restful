@@ -11,7 +11,7 @@ exports.getReviews = function(req, res, next) {
                 return;
             }
         res.json({"status": "1", "reviews": docs});
-    }).sort('userID');
+    }).sort('userid');
 };
 
 // get review
@@ -26,7 +26,7 @@ exports.getReview = function(req, res, next) {
             res.json(doc);
         });
         return;
-    } else if (req.query.storeID || req.query.userID) {
+    } else if (req.query.storeid || req.query.userid) {
         Review.find(req.query, function(err, docs) {
             res.json({"status": "1", "reviews": docs});
         });
@@ -38,40 +38,34 @@ exports.getReview = function(req, res, next) {
 // create review
 exports.createReview = function(req, res, next) {
     var review = new Review({
-        userID: req.body.userID,
-        storeID: req.body.storeID,
+        userid: req.body.userid,
+        storeid: req.body.storeid,
         rating: req.body.rating,
         comment: req.body.comment
     });
 
-    var haveUser = User.findById(req.body.userID, function(err, doc) {
+    User.findById(req.body.userid, function(err, doc) {
         if (err || doc === null) {
             console.log({"status": "0", "msg": err});
-            res.status(403).end();
-            return;
+	res.status(403).end();
+            return false;
         }
-        return true;
-    });
-
-    var haveStore = Store.findById(req.body.storeID, function(err, doc) {
-        if (err || doc === null) {
-            console.log({"status": "0", "msg": err});
-            res.status(403).end();
-            return;
-        }
-        return true;
-    });
-    
-    if (haveUser && haveStore) {
-        review.save(function(err) {
-            if (err) {
-                console.log({"status": "0", "msg": err});
-                res.status(403).end();
-                return;
+        Store.findById(req.body.storeid, function(err, doc) {
+            if (err || doc === null) {
+            	console.log({"status": "0", "msg": err});
+		res.status(403).end();
+            	return false;
             }
-            res.json({"status": "1", "msg": "Success!"});
-        });
-    }
+            review.save(function(err) {
+                if (err) {
+                    console.log({"status": "0", "msg": err});
+                    res.status(403).end();
+                    return;
+                }
+                res.json({"status": "1", "msg": "Success!"});
+            });
+	});
+    });
 };
 
 // delete review
@@ -102,8 +96,8 @@ exports.updateReview = function(req, res, next) {
             res.status(404).end();
             return;
         }
-        req.body.userID ? doc.userID = req.body.userID : '';
-        req.body.storeID ? doc.storeID = req.body.storeID : '';
+        req.body.userid ? doc.userid = req.body.userid : '';
+        req.body.storeid ? doc.storeid = req.body.storeid : '';
         req.body.rating ? doc.rating = req.body.rating : '';
         req.body.comment ? doc.comment = req.body.comment : '';
         

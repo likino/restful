@@ -26,13 +26,13 @@ exports.getStore = function(req, res, next) {
         });
         return;
     } else if (req.query.storename) {
-        Store.findOne(req.query, function(err, doc) {
-            if (err || doc === null) {
+        Store.find(req.query, function(err, docs) {
+            if (err || docs.length == 0) {
                 console.log({"status": "0", "msg": err});
                 res.status(404).end();
                 return;
             }
-            res.json(doc);
+            res.json({"status": "1", "stores": docs});
         });
     } else {
         res.status(404).end();
@@ -78,7 +78,7 @@ exports.deleteStore = function(req, res, next) {
         });
     });
 
-    Review.find({storeID: req.body.id}, function(err, docs) {
+    Review.find({storeid: req.body.id}, function(err, docs) {
         if (err || docs.length == 0) {
             console.log({"status": "0", "msg": err});
             res.status(404).end();

@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 
 // create store schema
 var StoreSchema = new mongoose.Schema({
-    storename: {type: String, required:true},
+    storename: {type: String, required:true,unique:false},
     category: {type: String, default:""},
     address: {type: String, default:""}
 });

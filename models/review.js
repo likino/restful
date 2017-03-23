@@ -2,9 +2,9 @@ var mongoose = require('mongoose');
 
 // create review schema
 var ReviewSchema = new mongoose.Schema({
-    userID: {type: String, required:true},
-    storeID: {type: String, required:true},
-    rating: {type:Number, required:true},
+    userid: {type: String, required:true, ref: 'User'},
+    storeid: {type: String, required:true, ref: 'Store'},
+    rating: {type:Number, required:true,min:0,max:10},
     comment: {type: String}
 });
 

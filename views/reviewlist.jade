@@ -34,15 +34,15 @@ block content
                   span.glyphicon.glyphicon-search
           div.col-sm-4
             div.input-group
-              input.form-control#searchByUserID(type="text", placeholder="userID")
+              input.form-control#searchByUserid(type="text", placeholder="userid")
               span.input-group-btn
-                button.btn.btn-default(onclick="getReviewByUserID()")
+                button.btn.btn-default(onclick="getReviewByUserid()")
                   span.glyphicon.glyphicon-search
           div.col-sm-4
             div.input-group
-              input.form-control#searchByStoreID(type="text", placeholder="storeID")
+              input.form-control#searchByStoreid(type="text", placeholder="storeid")
               span.input-group-btn
-                button.btn.btn-default(onclick="getReviewByStoreID()")
+                button.btn.btn-default(onclick="getReviewByStoreid()")
                   span.glyphicon.glyphicon-search
     div.panel.panel-info
       div.panel-heading.clearfix List
@@ -58,8 +58,8 @@ block content
           thead
             tr
               th id
-              th userID
-              th storeID
+              th userid
+              th storeid
               th rating
               th comment
               th(colspan="2") operate
@@ -75,13 +75,13 @@ block content
           form.form-horizontal
             input.hidden.id(type="text")
             div.form-group
-              label.col-sm-2.control-label(for="userID") userID
+              label.col-sm-2.control-label(for="userid") userid
               div.col-sm-10
-                input.form-control.userID(type="text", placeholder="userID")
+                input.form-control.userid(type="text", placeholder="userid")
             div.form-group
-              label.col-sm-2.control-label(for="storeID") storeID
+              label.col-sm-2.control-label(for="storeid") storeid
               div.col-sm-10
-                input.form-control.storeID(type="text", placeholder="storeID")
+                input.form-control.storeid(type="text", placeholder="storeid")
             div.form-group
               label.col-sm-2.control-label(for="rating") rating
               div.col-sm-10
@@ -103,13 +103,13 @@ block content
         div.modal-body
           form.form-horizontal
             div.form-group
-              label.col-sm-2.control-label(for="userID") userID
+              label.col-sm-2.control-label(for="userid") userid
               div.col-sm-10
-                input.form-control.userID(type="text", placeholder="userID")
+                input.form-control.userid(type="text", placeholder="userid")
             div.form-group
-              label.col-sm-2.control-label(for="storeID") storeID
+              label.col-sm-2.control-label(for="storeid") storeid
               div.col-sm-10
-                input.form-control.storeID(type="text", placeholder="storeID")
+                input.form-control.storeid(type="text", placeholder="storeid")
             div.form-group
               label.col-sm-2.control-label(for="rating") rating
               div.col-sm-10
@@ -140,8 +140,8 @@ block content
     function showReview(x) {
       var item = `<tr>
                     <td>${x._id}</td>
-                    <td>${x.userID}</td>
-                    <td>${x.storeID}</td>
+                    <td>${x.userid}</td>
+                    <td>${x.storeid}</td>
                     <td>${x.rating}</td>
                     <td>${x.comment}</td>
                     <td align="center">
@@ -164,8 +164,8 @@ block content
     //- add review
     function createReview() {
       var data = {
-        userID: $("#addModal .userID").val(),
-        storeID: $("#addModal .storeID").val(),
+        userid: $("#addModal .userid").val(),
+        storeid: $("#addModal .storeid").val(),
         rating: $("#addModal .rating").val(),
         comment: $("#addModal .comment").val()
       };
@@ -182,8 +182,9 @@ block content
           $('#addModal').modal('hide');
           location.reload();
         },
-        error: function(err) {
-          console.log(err)
+        error: function(xhr, err) {
+          console.log(err);
+          alert(xhr.status + ', Save failed!');
         }
       });
     }
@@ -216,19 +217,20 @@ block content
           $('tbody').empty();
           showReview(data);
         },
-        error: function(err) {
-          console.log(err)
+        error: function(xhr, err) {
+          console.log(err);
+          alert(xhr.status + ', Search failed!');
         }
       });
     }
 
-    //- search review by userID
-    function getReviewByUserID() {
-      var id = $('#searchByUserID').val();
+    //- search review by userid
+    function getReviewByUserid() {
+      var id = $('#searchByUserid').val();
       $.ajax({
         type: 'GET',
         url: '/review',
-        data: {userID: id},
+        data: {userid: id},
         success: function(data) {
           console.log(data)
           $('tbody').empty();
@@ -236,27 +238,29 @@ block content
             showReview(x);
           });
         },
-        error: function(err) {
-          console.log(err)
+        error: function(xhr, err) {
+          console.log(err);
+          alert(xhr.status + ', Search failed!');
         }
       });
     }
 
-    //- search review by storeID
-    function getReviewByStoreID() {
-      var id = $('#searchByStoreID').val();
+    //- search review by storeid
+    function getReviewByStoreid() {
+      var id = $('#searchByStoreid').val();
       $.ajax({
         type: 'GET',
         url: '/review',
-        data: {storeID: id},
+        data: {storeid: id},
         success: function(data) {
           $('tbody').empty();
            data.reviews.map(function(x) {
             showReview(x);
           });
         },
-        error: function(err) {
-          console.log(err)
+        error: function(xhr, err) {
+          console.log(err);
+          alert(xhr.status + ', Search failed!');
         }
       });
     }
@@ -269,8 +273,8 @@ block content
         data: {id: id},
         success: function(data) {
           $('#editModal .id').val(data._id);
-          $('#editModal .userID').val(data.userID);
-          $('#editModal .storeID').val(data.storeID);
+          $('#editModal .userid').val(data.userid);
+          $('#editModal .storeid').val(data.storeid);
           $('#editModal .rating').val(data.rating);
           $('#editModal .comment').val(data.comment);
         },
@@ -284,8 +288,8 @@ block content
     function updateReview() {
       var data = {
         id: $("#editModal .id").val(),
-        userID: $("#editModal .userID").val(),
-        storeID: $("#editModal .storeID").val(),
+        userid: $("#editModal .userid").val(),
+        storeid: $("#editModal .storeid").val(),
         rating: $("#editModal .rating").val(),
         comment: $("#editModal .comment").val()
       };
@@ -305,8 +309,8 @@ block content
           alert("Update success!");
           location.reload();
         },
-        error: function(err) {
-          alert("Update failed!")
+        error: function(xhr, err) {
+          alert(xhr.status + ", Update failed!");
         }
       });
     }

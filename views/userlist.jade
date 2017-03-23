@@ -88,7 +88,7 @@ block content
             div.form-group
               label.col-sm-2.control-label(for="username") username
               div.col-sm-10
-                input.form-control.username(type="text", placeholder="username")
+                input.form-control.username(type="text", disabled="true", placeholder="username")
             div.form-group
               label.col-sm-2.control-label(for="firstname") firstname
               div.col-sm-10
@@ -160,7 +160,7 @@ block content
       $.ajax({
         type: 'GET',
         url: '/review',
-        data: {userID: x._id},
+        data: {userid: x._id},
         success: function(data) {
           var ratings = data.reviews.map(x => x.rating);
           var average = arrAverageNum(ratings);
@@ -211,8 +211,8 @@ block content
           $('#addModal').modal('hide');
           location.reload();
         },
-        error: function(err) {
-          alert("Save failed!");
+        error: function(xhr, err) {
+          alert(xhr.status + ", Save failed!");
         }
       });
     }
@@ -227,8 +227,8 @@ block content
           alert("Delete success!");
           location.reload();
         },
-        error: function(err) {
-          alert("Delete failed!");
+        error: function(xhr, err) {
+          alert(xhr.status + ", Delete failed!");
         }
       });
     }
@@ -244,9 +244,9 @@ block content
           $('tbody').empty();
           showUser(data);
         },
-        error: function(err) {
+        error: function(xhr, err) {
           console.log(err)
-          alert('Search failed!');
+          alert(xhr.status + ', Search failed!');
         }
       });
     }
@@ -262,9 +262,9 @@ block content
           $('tbody').empty();
           showUser(data);
         },
-        error: function(err) {
+        error: function(xhr, err) {
           console.log(err)
-          alert('Search failed!');
+          alert(xhr.status + ', Search failed!');
         }
       });
     }
@@ -294,9 +294,9 @@ block content
             showUser(x);
           });
         },
-        error: function(err) {
+        error: function(xhr, err) {
           console.log(err)
-          alert('Search failed!');
+          alert(xhr.status + ', Search failed!');
         }
       });
     }
@@ -339,8 +339,8 @@ block content
           alert("Update success!");
           location.reload();
         },
-        error: function(err) {
-          alert("Update failed!");
+        error: function(xhr, err) {
+          alert(xhr.status + ", Update failed!");
         }
       });
     }

@@ -78,7 +78,7 @@ exports.deleteUser = function(req, res, next) {
         });
     });
 
-    Review.find({userID: req.body.id}, function(err, docs) {
+    Review.find({userid: req.body.id}, function(err, docs) {
         if (err || docs.length == 0) {
             console.log({"status": "0", "msg": err});
             res.status(404).end();
