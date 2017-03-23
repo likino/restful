@@ -1,0 +1,327 @@
+extends layout
+
+block content
+  nav.navbar.navbar-default
+    div.container
+      div.navbar-header
+        button.navbar-toggle.collapsed(type="button", data-toggle="collapse", data-target="#menu", aria-expanded="false")
+          span.sr-only Toggle navigation
+          sspan.icon-bar
+          span.icon-bar
+          span.icon-bar
+        a.navbar-brand REST
+      div.collapse.navbar-collapse#menu
+        ul.nav.navbar-nav
+          li
+            a(href="/") Home
+          li
+            a(href="/userlist") Userlist
+          li.active
+            a(href="/storelist") Storelist
+          li
+            a(href="/reviewlist") Reviewlist
+  div.container
+    h3 Storelist
+    div.panel.panel-default
+      div.panel-heading Search
+      div.panel-body
+        div.row
+          div.col-sm-6
+            div.input-group
+              input.form-control#searchById(type="text", placeholder="id")
+              span.input-group-btn
+                button.btn.btn-default(onclick="getStoreById()")
+                  span.glyphicon.glyphicon-search
+          div.col-sm-6
+            div.input-group
+              input.form-control#searchByStorename(type="text", placeholder="storename")
+              span.input-group-btn
+                button.btn.btn-default(onclick="getStoreByStorename()")
+                  span.glyphicon.glyphicon-search
+    div.panel.panel-default
+      div.panel-heading Multi-condition Search
+      div.panel-body
+        div.row
+          div.col-sm-5
+            input.form-control#searchCategory(type="text", placeholder="category")
+          div.col-sm-5
+            input.form-control#searchAddress(type="text", placeholder="address")
+          div.col-sm-2
+            button.btn.btn-default(onclick="getStoreByMultiCondition()")
+              span.glyphicon.glyphicon-search
+    div.panel.panel-info   
+      div.panel-heading.clearfix List
+        div.btn-group.pull-right(role="group")
+          button.btn.btn-sm.btn-success(onclick="reset()")
+            span.glyphicon.glyphicon-list-alt
+            span  Show All
+          button.btn.btn-sm.btn-info(data-toggle="modal" data-target="#addModal")
+            span.glyphicon.glyphicon-plus
+            span  Add
+      div.table-responsive
+        table.table.table-bordered.table-hover
+          thead
+            tr
+              th id
+              th storename
+              th category
+              th address
+              th average
+              th(colspan="2") operate
+          tbody
+  div#editModal.modal.fade(role="dialog",aria-labelledby="myModalLabel")
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          button.close(type="button", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+          h4.modal-title#myModalLabel Edit
+        div.modal-body
+          form.form-horizontal
+            input.hidden.id(type="text")
+            div.form-group
+              label.col-sm-2.control-label(for="storename") storename
+              div.col-sm-10
+                input.form-control.storename(type="text", placeholder="storename")
+            div.form-group
+              label.col-sm-2.control-label(for="category") category
+              div.col-sm-10
+                input.form-control.category(type="text", placeholder="category")
+            div.form-group
+              label.col-sm-2.control-label(for="address") address
+              div.col-sm-10
+                input.form-control.address(type="text", placeholder="address")
+        div.modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Close
+          button.btn.btn-primary(type="button", onclick="updateStore()") Save
+  div#addModal.modal.fade(role="dialog",aria-labelledby="myModalLabel")
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          button.close(type="button", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+          h4.modal-title#myModalLabel Add
+        div.modal-body
+          form.form-horizontal
+            div.form-group
+              label.col-sm-2.control-label(for="storename") storename
+              div.col-sm-10
+                input.form-control.storename(type="text", placeholder="storename")
+            div.form-group
+              label.col-sm-2.control-label(for="category") category
+              div.col-sm-10
+                input.form-control.category(type="text", placeholder="category")
+            div.form-group
+              label.col-sm-2.control-label(for="address") address
+              div.col-sm-10
+                input.form-control.address(type="text", placeholder="address")
+        div.modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Close
+          button.btn.btn-primary(type="button", onclick="createStore()") Save
+
+  script.
+    $(function(){
+      getStores();
+    });
+
+    //- get stores json
+    function getStores() {
+      $.getJSON('/stores', function(data) {
+        data.stores.map(function(x) {
+          showStore(x);
+        });
+      });
+    }
+
+    //- show storelist
+    function showStore(x) {
+      $.ajax({
+        type: 'GET',
+        url: '/review',
+        data: {storeID: x._id},
+        success: function(data) {
+          var ratings = data.reviews.map(x => x.rating);
+          var average = arrAverageNum(ratings);
+          var item = `<tr>
+                        <td>${x._id}</td>
+                        <td>${x.storename}</td>
+                        <td>${x.category}</td>
+                        <td>${x.address}</td>
+                        <td>${average}</td>
+                        <td align="center">
+                          <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#editModal" onclick="getStore('${x._id}')">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                            <span> Edit</span>
+                          </button>
+                        </td>
+                        <td align="center">
+                          <button class="btn btn-sm btn-danger" onclick="deleteStore('${x._id}')"> 
+                            <span class="glyphicon glyphicon-remove"></span>
+                            <span> Delete</span>
+                          </button>
+                        </td>
+                      </tr>
+                      `;
+          $('tbody').append(item);
+        },
+        error: function(err) {
+          console.log(err)
+        }
+      })
+    }
+
+    //- add store
+    function createStore() {
+      var data = {
+        storename: $("#addModal .storename").val(),
+        category: $("#addModal .category").val(),
+        address: $("#addModal .address").val()
+      };
+      $.ajax({
+        type: 'POST',
+        url: '/store',
+        data: data,
+        success: function() {
+          alert("Save success!");
+          $('#addModal').modal('hide');
+          location.reload();
+        },
+        error: function(err) {
+          alert("Save failed!");
+        }
+      });
+    }
+
+    //- delete store
+    function deleteStore(id) {
+      $.ajax({
+        type: 'DELETE',
+        url: '/store',
+        data: {id: id},
+        success: function() {
+          alert("Delete success!");
+          location.reload();
+        },
+        error: function(err) {
+          alert("Delete failed!");
+        }
+      });
+    }
+
+    //- search store by id
+    function getStoreById() {
+      var id = $('#searchById').val();
+      $.ajax({
+        type: 'GET',
+        url: '/store',
+        data: {id: id},
+        success: function(data) {
+          $('tbody').empty();
+          showStore(data);
+        },
+        error: function(err) {
+          console.log(err);
+          alert('Search failed!');
+        }
+      });
+    }
+
+    //- search store by storename
+    function getStoreByStorename() {
+      var storename = $('#searchByStorename').val();
+      $.ajax({
+        type: 'GET',
+        url: '/store',
+        data: {storename: storename},
+        success: function(data) {
+          $('tbody').empty();
+          showStore(data);
+        },
+        error: function(err) {
+          console.log(err);
+          alert('Search failed!');
+        }
+      });
+    }
+
+    //- search store by multi-condition
+    function getStoreByMultiCondition () {
+      var data = {};
+      if ($('#searchCategory').val()){
+        data.category = $('#searchCategory').val();
+      }
+      if ($('#searchAddress').val()){
+        data.address = $('#searchAddress').val();
+      }
+      $.ajax({
+        type: 'GET',
+        url: '/stores',
+        data: data,
+        success: function(data) {
+          $('tbody').empty();
+          data.stores.map(function(x) {
+            showStore(x);
+          });
+        },
+        error: function(err) {
+          console.log(err)
+          alert('Search failed!');
+        }
+      });
+    }
+
+    //- show store in the modalbox
+    function getStore(id) {
+      $.ajax({
+        type: 'GET',
+        url: '/store',
+        data: {id: id},
+        success: function(data) {
+          $('#editModal .id').val(data._id);
+          $('#editModal .storename').val(data.storename);
+          $('#editModal .category').val(data.category);
+          $('#editModal .address').val(data.address);
+        },
+        error: function(err) {
+          console.log(err)
+        }
+      });
+    }
+
+    //- edit store
+    function updateStore() {
+      var data = {
+        id: $("#editModal .id").val(),
+        storename: $("#editModal .storename").val(),
+        category: $("#editModal .category").val(),
+        address: $("#editModal .address").val()
+      };
+      $.ajax({
+        type: 'PUT',
+        url: '/store',
+        data: data,
+        success: function() {
+          alert("Update success!");
+          location.reload();
+        },
+        error: function(err) {
+          alert("Update failed!");
+        }
+      });
+    }
+
+    //- refresh and show all
+    function reset() {
+      location.reload();
+    }
+
+    //- average rating
+    function arrAverageNum(arr){
+      if(arr.length == 0) {
+        return '-';
+      }
+      var sum = arr.reduce(function(x, y) {
+        return x + y;
+      })
+      return sum/arr.length;
+    }

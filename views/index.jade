@@ -1,0 +1,27 @@
+extends layout
+
+block content
+  nav.navbar.navbar-default
+    div.container
+      div.navbar-header
+        button.navbar-toggle.collapsed(type="button", data-toggle="collapse", data-target="#menu", aria-expanded="false")
+          span.sr-only Toggle navigation
+          sspan.icon-bar
+          span.icon-bar
+          span.icon-bar
+        a.navbar-brand REST
+      div.collapse.navbar-collapse#menu
+        ul.nav.navbar-nav
+          li.active
+            a(href="/") Home
+          li
+            a(href="/userlist") Userlist
+          li
+            a(href="/storelist") Storelist
+          li
+            a(href="/reviewlist") Reviewlist
+  div.container
+    h1 Welcome！
+    
+
+    

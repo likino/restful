@@ -1,0 +1,362 @@
+extends layout
+
+block content
+  nav.navbar.navbar-default
+    div.container
+      div.navbar-header
+        button.navbar-toggle.collapsed(type="button", data-toggle="collapse", data-target="#menu", aria-expanded="false")
+          span.sr-only Toggle navigation
+          sspan.icon-bar
+          span.icon-bar
+          span.icon-bar
+        a.navbar-brand REST
+      div.collapse.navbar-collapse#menu
+        ul.nav.navbar-nav
+          li
+            a(href="/") Home
+          li.active
+            a(href="/userlist") Userlist
+          li
+            a(href="/storelist") Storelist
+          li
+            a(href="/reviewlist") Reviewlist
+  div.container
+    h3 Userlist
+    div.panel.panel-default
+      div.panel-heading Search
+      div.panel-body
+        div.row
+          div.col-sm-6
+            div.input-group
+              input.form-control#searchById(type="text", placeholder="id")
+              span.input-group-btn
+                button.btn.btn-default(onclick="getUserById()")
+                  span.glyphicon.glyphicon-search
+          div.col-sm-6
+            div.input-group
+              input.form-control#searchByUsername(type="text", placeholder="username")
+              span.input-group-btn
+                button.btn.btn-default(onclick="getUserByUsername()")
+                  span.glyphicon.glyphicon-search
+    div.panel.panel-default
+      div.panel-heading Multi-condition Search
+      div.panel-body
+        div.row
+          div.col-sm-3
+            input.form-control#searchFirstname(type="text", placeholder="firstname")
+          div.col-sm-3
+            input.form-control#searchLastname(type="text", placeholder="lastname")
+          div.col-sm-2
+            input.form-control#searchSex(type="text", placeholder="sex")
+          div.col-sm-2
+            input.form-control#searchAge(type="text", placeholder="age")
+          div.col-sm-2
+            button.btn.btn-default(onclick="getUserByMultiCondition()")
+              span.glyphicon.glyphicon-search
+    div.panel.panel-info
+      div.panel-heading.clearfix List
+        div.btn-group.pull-right(role="group")
+          button.btn.btn-sm.btn-success(onclick="reset()")
+            span.glyphicon.glyphicon-list-alt
+            span  Show All
+          button.btn.btn-sm.btn-info(data-toggle="modal" data-target="#addModal")
+            span.glyphicon.glyphicon-plus
+            span  Add
+      div.table-responsive
+        table.table.table-bordered.table-hover
+          thead
+            tr
+              th id
+              th username
+              th firstname
+              th lastname
+              th sex
+              th age
+              th average
+              th(colspan="2") operate
+          tbody
+  div#editModal.modal.fade(role="dialog",aria-labelledby="myModalLabel")
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          button.close(type="button", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+          h4.modal-title#myModalLabel Edit
+        div.modal-body
+          form.form-horizontal
+            input.hidden.id(type="text")
+            div.form-group
+              label.col-sm-2.control-label(for="username") username
+              div.col-sm-10
+                input.form-control.username(type="text", placeholder="username")
+            div.form-group
+              label.col-sm-2.control-label(for="firstname") firstname
+              div.col-sm-10
+                input.form-control.firstname(type="text", placeholder="firstname")
+            div.form-group
+              label.col-sm-2.control-label(for="lastname") lastname
+              div.col-sm-10
+                input.form-control.lastname(type="text", placeholder="lastname")
+            div.form-group
+              label.col-sm-2.control-label(for="sex") sex
+              div.col-sm-10
+                input.form-control.sex(type="text", placeholder="sex")
+            div.form-group
+              label.col-sm-2.control-label(for="age") age
+              div.col-sm-10
+                input.form-control.age(type="text", placeholder="age")
+        div.modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Close
+          button.btn.btn-primary(type="button", onclick="updateUser()") Save
+  div#addModal.modal.fade(role="dialog",aria-labelledby="myModalLabel")
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          button.close(type="button", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+          h4.modal-title#myModalLabel Add
+        div.modal-body
+          form.form-horizontal
+            div.form-group
+              label.col-sm-2.control-label(for="username") username
+              div.col-sm-10
+                input.form-control.username(type="text", placeholder="username")
+            div.form-group
+              label.col-sm-2.control-label(for="firstname") firstname
+              div.col-sm-10
+                input.form-control.firstname(type="text", placeholder="firstname")
+            div.form-group
+              label.col-sm-2.control-label(for="lastname") lastname
+              div.col-sm-10
+                input.form-control.lastname(type="text", placeholder="lastname")
+            div.form-group
+              label.col-sm-2.control-label(for="sex") sex
+              div.col-sm-10
+                input.form-control.sex(type="text", placeholder="sex")
+            div.form-group
+              label.col-sm-2.control-label(for="age") age
+              div.col-sm-10
+                input.form-control.age(type="text", placeholder="age")
+        div.modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Close
+          button.btn.btn-primary(type="button", onclick="createUser()") Save
+
+  script.
+    $(function(){
+      getUsers();
+    });
+
+    //- get users json
+    function getUsers() {
+      $.getJSON('/users', function(data) {
+        data.users.map(function(x) {
+          showUser(x);
+        });
+      });
+    }
+
+    //- show userlist
+    function showUser(x) {
+      $.ajax({
+        type: 'GET',
+        url: '/review',
+        data: {userID: x._id},
+        success: function(data) {
+          var ratings = data.reviews.map(x => x.rating);
+          var average = arrAverageNum(ratings);
+          var item = `<tr>
+                        <td>${x._id}</td>
+                        <td>${x.username}</td>
+                        <td>${x.firstname}</td>
+                        <td>${x.lastname}</td>
+                        <td>${x.sex}</td>
+                        <td>${x.age}</td>
+                        <td>${average}</td>
+                        <td align="center">
+                          <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#editModal" onclick="getUser('${x._id}')">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                            <span> Edit</span>
+                          </button>
+                        </td>
+                        <td align="center">
+                          <button class="btn btn-sm btn-danger" onclick="deleteUser('${x._id}')"> 
+                            <span class="glyphicon glyphicon-remove"></span>
+                            <span> Delete</span>
+                          </button>
+                        </td>
+                      </tr>
+                      `;
+          $('tbody').append(item);
+        },
+        error: function(err) {
+          console.log(err)
+        }
+      })
+    }
+    //- add user
+    function createUser() {
+      var data = {
+        username: $("#addModal .username").val(),
+        firstname: $("#addModal .firstname").val(),
+        lastname: $("#addModal .lastname").val(),
+        sex: $("#addModal .sex").val(),
+        age: $("#addModal .age").val()
+      };
+      $.ajax({
+        type: 'POST',
+        url: '/user',
+        data: data,
+        success: function() {
+          alert("Save success!");
+          $('#addModal').modal('hide');
+          location.reload();
+        },
+        error: function(err) {
+          alert("Save failed!");
+        }
+      });
+    }
+
+    //- delete user
+    function deleteUser(id) {
+      $.ajax({
+        type: 'DELETE',
+        url: '/user',
+        data: {id: id},
+        success: function() {
+          alert("Delete success!");
+          location.reload();
+        },
+        error: function(err) {
+          alert("Delete failed!");
+        }
+      });
+    }
+
+    //- search user by id
+    function getUserById() {
+      var id = $('#searchById').val();
+      $.ajax({
+        type: 'GET',
+        url: '/user',
+        data: {id: id},
+        success: function(data) {
+          $('tbody').empty();
+          showUser(data);
+        },
+        error: function(err) {
+          console.log(err)
+          alert('Search failed!');
+        }
+      });
+    }
+
+    //- search user by username
+    function getUserByUsername() {
+      var username = $('#searchByUsername').val();
+      $.ajax({
+        type: 'GET',
+        url: '/user',
+        data: {username: username},
+        success: function(data) {
+          $('tbody').empty();
+          showUser(data);
+        },
+        error: function(err) {
+          console.log(err)
+          alert('Search failed!');
+        }
+      });
+    }
+
+    //- search user by multi-condition
+    function getUserByMultiCondition() {
+      var data = {};
+      if ($('#searchFirstname').val()){
+        data.firstname = $('#searchFirstname').val();
+      }
+      if ($('#searchLastname').val()){
+        data.lastname = $('#searchLastname').val();
+      }
+      if ($('#searchSex').val()){
+        data.sex = $('#searchSex').val();
+      }
+      if ($('#searchAge').val()){
+        data.age = $('#searchAge').val();
+      }
+      $.ajax({
+        type: 'GET',
+        url: '/users',
+        data: data,
+        success: function(data) {
+          $('tbody').empty();
+          data.users.map(function(x) {
+            showUser(x);
+          });
+        },
+        error: function(err) {
+          console.log(err)
+          alert('Search failed!');
+        }
+      });
+    }
+
+    //- show user in the modalbox
+    function getUser(id) {
+      $.ajax({
+        type: 'GET',
+        url: '/user',
+        data: {id: id},
+        success: function(data) {
+          $('#editModal .id').val(data._id);
+          $('#editModal .username').val(data.username);
+          $('#editModal .firstname').val(data.firstname);
+          $('#editModal .lastname').val(data.lastname);
+          $('#editModal .sex').val(data.sex);
+          $('#editModal .age').val(data.age);
+        },
+        error: function(err) {
+          console.log(err)
+        }
+      });
+    }
+
+    //- edit user
+    function updateUser() {
+      var data = {
+        id: $("#editModal .id").val(),
+        username: $("#editModal .username").val(),
+        firstname: $("#editModal .firstname").val(),
+        lastname: $("#editModal .lastname").val(),
+        sex: $("#editModal .sex").val(),
+        age: $("#editModal .age").val()
+      };
+      $.ajax({
+        type: 'PUT',
+        url: '/user',
+        data: data,
+        success: function() {
+          alert("Update success!");
+          location.reload();
+        },
+        error: function(err) {
+          alert("Update failed!");
+        }
+      });
+    }
+
+    //- refresh and show all
+    function reset() {
+      location.reload();
+    }
+
+    //- average rating
+    function arrAverageNum(arr){
+      if(arr.length == 0) {
+        return '-';
+      }
+      var sum = arr.reduce(function(x, y) {
+        return x + y;
+      })
+      return sum/arr.length;
+    }

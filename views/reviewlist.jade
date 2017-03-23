@@ -1,0 +1,317 @@
+extends layout
+
+block content
+  nav.navbar.navbar-default
+    div.container
+      div.navbar-header
+        button.navbar-toggle.collapsed(type="button", data-toggle="collapse", data-target="#menu", aria-expanded="false")
+          span.sr-only Toggle navigation
+          sspan.icon-bar
+          span.icon-bar
+          span.icon-bar
+        a.navbar-brand REST
+      div.collapse.navbar-collapse#menu
+        ul.nav.navbar-nav
+          li
+            a(href="/") Home
+          li
+            a(href="/userlist") Userlist
+          li
+            a(href="/storelist") Storelist
+          li.active
+            a(href="/reviewlist") Reviewlist
+  div.container
+    h3 Reviewlist
+    div.panel.panel-default
+      div.panel-heading Search
+      div.panel-body
+        div.row
+          div.col-sm-4
+            div.input-group
+              input.form-control#searchById(type="text", placeholder="id")
+              span.input-group-btn
+                button.btn.btn-default(onclick="getReviewById()")
+                  span.glyphicon.glyphicon-search
+          div.col-sm-4
+            div.input-group
+              input.form-control#searchByUserID(type="text", placeholder="userID")
+              span.input-group-btn
+                button.btn.btn-default(onclick="getReviewByUserID()")
+                  span.glyphicon.glyphicon-search
+          div.col-sm-4
+            div.input-group
+              input.form-control#searchByStoreID(type="text", placeholder="storeID")
+              span.input-group-btn
+                button.btn.btn-default(onclick="getReviewByStoreID()")
+                  span.glyphicon.glyphicon-search
+    div.panel.panel-info
+      div.panel-heading.clearfix List
+        div.btn-group.pull-right(role="group")
+          button.btn.btn-sm.btn-success(onclick="reset()")
+            span.glyphicon.glyphicon-list-alt
+            span  Show All
+          button.btn.btn-sm.btn-info(data-toggle="modal" data-target="#addModal")
+            span.glyphicon.glyphicon-plus
+            span  Add
+      div.table-responsive
+        table.table.table-bordered.table-hover
+          thead
+            tr
+              th id
+              th userID
+              th storeID
+              th rating
+              th comment
+              th(colspan="2") operate
+          tbody
+  div#editModal.modal.fade(role="dialog",aria-labelledby="myModalLabel")
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          button.close(type="button", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+          h4.modal-title#myModalLabel Edit
+        div.modal-body
+          form.form-horizontal
+            input.hidden.id(type="text")
+            div.form-group
+              label.col-sm-2.control-label(for="userID") userID
+              div.col-sm-10
+                input.form-control.userID(type="text", placeholder="userID")
+            div.form-group
+              label.col-sm-2.control-label(for="storeID") storeID
+              div.col-sm-10
+                input.form-control.storeID(type="text", placeholder="storeID")
+            div.form-group
+              label.col-sm-2.control-label(for="rating") rating
+              div.col-sm-10
+                input.form-control.rating(type="text", placeholder="rating")
+            div.form-group
+              label.col-sm-2.control-label(for="comment") comment
+              div.col-sm-10
+                input.form-control.comment(type="text", placeholder="comment")
+        div.modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Close
+          button.btn.btn-primary(type="button", onclick="updateReview()") Save
+  div#addModal.modal.fade(role="dialog",aria-labelledby="myModalLabel")
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          button.close(type="button", data-dismiss="modal", aria-label="Close")
+            span(aria-hidden="true") &times;
+          h4.modal-title#myModalLabel Add
+        div.modal-body
+          form.form-horizontal
+            div.form-group
+              label.col-sm-2.control-label(for="userID") userID
+              div.col-sm-10
+                input.form-control.userID(type="text", placeholder="userID")
+            div.form-group
+              label.col-sm-2.control-label(for="storeID") storeID
+              div.col-sm-10
+                input.form-control.storeID(type="text", placeholder="storeID")
+            div.form-group
+              label.col-sm-2.control-label(for="rating") rating
+              div.col-sm-10
+                input.form-control.rating(type="text", placeholder="rating")
+            div.form-group
+              label.col-sm-2.control-label(for="comment") comment
+              div.col-sm-10
+                input.form-control.comment(type="text", placeholder="comment")
+        div.modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Close
+          button.btn.btn-primary(type="button", onclick="createReview()") Save
+
+  script.
+    $(function(){
+      getReviews();
+    });
+
+    //- show reviewlist
+    function getReviews() {
+      $.getJSON('/reviews', function(data) {
+        data.reviews.map(function(x) {
+          showReview(x);
+        });
+      });
+    }
+
+    //- show reviewlist
+    function showReview(x) {
+      var item = `<tr>
+                    <td>${x._id}</td>
+                    <td>${x.userID}</td>
+                    <td>${x.storeID}</td>
+                    <td>${x.rating}</td>
+                    <td>${x.comment}</td>
+                    <td align="center">
+                      <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#editModal" onclick="getReview('${x._id}')">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                        <span> Edit</span>
+                      </button>
+                    </td>
+                    <td align="center">
+                      <button class="btn btn-sm btn-danger" onclick="deleteReview('${x._id}')"> 
+                        <span class="glyphicon glyphicon-remove"></span>
+                        <span> Delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                  `;
+      $('tbody').append(item);
+    }
+
+    //- add review
+    function createReview() {
+      var data = {
+        userID: $("#addModal .userID").val(),
+        storeID: $("#addModal .storeID").val(),
+        rating: $("#addModal .rating").val(),
+        comment: $("#addModal .comment").val()
+      };
+      if(data.rating < 0 || data.rating > 10) {
+        alert('The rating is not from 0 to 10');
+        return;
+      }
+      $.ajax({
+        type: 'POST',
+        url: '/review',
+        data: data,
+        success: function() {
+          alert("Save success!");
+          $('#addModal').modal('hide');
+          location.reload();
+        },
+        error: function(err) {
+          console.log(err)
+        }
+      });
+    }
+
+    //- delete review
+    function deleteReview(id) {
+      console.log(id)
+      $.ajax({
+        type: 'DELETE',
+        url: '/review',
+        data: {id: id},
+        success: function() {
+          alert("Delete success!");
+          location.reload();
+        },
+        error: function(err) {
+          console.log(err)
+        }
+      });
+    }
+
+    //- search review by id
+    function getReviewById() {
+      var id = $('#searchById').val();
+      $.ajax({
+        type: 'GET',
+        url: '/review',
+        data: {id: id},
+        success: function(data) {
+          $('tbody').empty();
+          showReview(data);
+        },
+        error: function(err) {
+          console.log(err)
+        }
+      });
+    }
+
+    //- search review by userID
+    function getReviewByUserID() {
+      var id = $('#searchByUserID').val();
+      $.ajax({
+        type: 'GET',
+        url: '/review',
+        data: {userID: id},
+        success: function(data) {
+          console.log(data)
+          $('tbody').empty();
+          data.reviews.map(function(x) {
+            showReview(x);
+          });
+        },
+        error: function(err) {
+          console.log(err)
+        }
+      });
+    }
+
+    //- search review by storeID
+    function getReviewByStoreID() {
+      var id = $('#searchByStoreID').val();
+      $.ajax({
+        type: 'GET',
+        url: '/review',
+        data: {storeID: id},
+        success: function(data) {
+          $('tbody').empty();
+           data.reviews.map(function(x) {
+            showReview(x);
+          });
+        },
+        error: function(err) {
+          console.log(err)
+        }
+      });
+    }
+
+    //- show review in the modalbox
+    function getReview(id) {
+      $.ajax({
+        type: 'GET',
+        url: '/review',
+        data: {id: id},
+        success: function(data) {
+          $('#editModal .id').val(data._id);
+          $('#editModal .userID').val(data.userID);
+          $('#editModal .storeID').val(data.storeID);
+          $('#editModal .rating').val(data.rating);
+          $('#editModal .comment').val(data.comment);
+        },
+        error: function(err) {
+          console.log(err)
+        }
+      });
+    }
+
+    //- edit review
+    function updateReview() {
+      var data = {
+        id: $("#editModal .id").val(),
+        userID: $("#editModal .userID").val(),
+        storeID: $("#editModal .storeID").val(),
+        rating: $("#editModal .rating").val(),
+        comment: $("#editModal .comment").val()
+      };
+
+      var reg = '/^(\d(\.\d)?|10)$/';
+
+      if (reg.test(data.rating)) {
+        alert('The rating is not from 0');
+        return;
+      }
+
+      $.ajax({
+        type: 'PUT',
+        url: '/review',
+        data: data,
+        success: function() {
+          alert("Update success!");
+          location.reload();
+        },
+        error: function(err) {
+          alert("Update failed!")
+        }
+      });
+    }
+
+    //- refresh and show all
+    function reset() {
+      location.reload();
+    }
